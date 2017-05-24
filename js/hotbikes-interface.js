@@ -13,4 +13,8 @@ $(document).ready(function() {
     const CITY = $("#city-input").val();
     HOTBIKE.getAllByLocation(CITY);
   });
+
+  $('#heatmap').click(function(){
+    HOTBIKE.generateHeatmap();
+  });
 });

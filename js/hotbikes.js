@@ -5,21 +5,28 @@ function BikeData(displayCount){
   this.map;
 }
 
+BikeData.prototype.generateHeatmap = function(){
+  console.log("test");
+  new google.maps.visualization.HeatmapLayer({
+    data: this.coords.map(function(c){return new google.maps.LatLng(c.lat,c.lng)}),
+    map: this.map,
+    radius: 20
+  });
+};
+
 BikeData.prototype.generateMap = function(coords) {
   this.map = new google.maps.Map(document.getElementById("map"), {
     zoom: 11,
     center: coords,
   });
-}
+};
 
 BikeData.prototype.getAllIds = function(bikesArray){
   // the scope of the forEach callback function
   // by default is Window. forEach optionally takes a second argument
   // that defines the value of 'this' every time that callback function
   // runs
-  bikesArray.forEach(function(bike){
-    this.ids.push(bike.id);
-  }, this);
+  bikesArray.forEach(function(bike){this.ids.push(bike.id);}, this);
 };
 
 BikeData.prototype.getAllBikesById = function(){
@@ -29,10 +36,10 @@ BikeData.prototype.getAllBikesById = function(){
       .then(function(response){
         let coords = {lng: response.bike.stolen_record.longitude,
         lat: response.bike.stolen_record.latitude}
-        new google.maps.Marker({
-          map: HotBikeScope.map,
-          position: coords
-        });
+        // new google.maps.Marker({
+        //   map: HotBikeScope.map,
+        //   position: coords
+        // });
         HotBikeScope.coords.push(coords);
       }).then(function(){
         console.log(HotBikeScope.coords);
@@ -46,7 +53,7 @@ BikeData.prototype.getAllBikesById = function(){
 
 BikeData.prototype.getAllByLocation = function(location){
   const PAGE = "1";
-  const PER_PAGE = "1";
+  const PER_PAGE = "100";
   const LOCATION = location.replace(/,/, "%2C").replace(" ", "%20");
   const DISTANCE = "100";
   let HotBikeScope = this;
@@ -58,6 +65,7 @@ BikeData.prototype.getAllByLocation = function(location){
   // access to class methods.
   $.get(`https://bikeindex.org:443/api/v3/search?page=${PAGE}&per_page=${PER_PAGE}&location=${LOCATION}&distance=${DISTANCE}&stolenness=proximity`)
   .then(function(response){
+    this
     HotBikeScope.getAllIds(response.bikes);
     HotBikeScope.getAllBikesById();
 

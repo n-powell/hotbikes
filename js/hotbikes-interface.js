@@ -5,9 +5,12 @@ var displayCount = function(count){
 }
 
 $(document).ready(function() {
+  const HOTBIKE = new BikeData(displayCount);
+  const COORDS = {lat: 45.5133499, lng: -122.687179};
+  HOTBIKE.generateMap(COORDS);
+
   $("#city-submit").click(function() {
     const CITY = $("#city-input").val();
-    const HOTBIKE = new BikeData(displayCount);
     HOTBIKE.getAllByLocation(CITY);
   });
 });

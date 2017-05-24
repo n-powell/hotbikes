@@ -2,6 +2,14 @@ function BikeData(displayCount){
   this.ids = [];
   this.coords = [];
   this.displayCount = displayCount;
+  this.map;
+}
+
+BikeData.prototype.generateMap = function(coords) {
+  this.map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 11,
+    center: coords,
+  });
 }
 
 BikeData.prototype.getAllIds = function(bikesArray){
@@ -19,9 +27,15 @@ BikeData.prototype.getAllBikesById = function(){
   this.ids.forEach(function(id){
       $.get(`https://bikeindex.org:443/api/v3/bikes/${id}`)
       .then(function(response){
-        HotBikeScope.coords.push({lng: response.bike.stolen_record.longitude,
-        lat: response.bike.stolen_record.latitude});
+        let coords = {lng: response.bike.stolen_record.longitude,
+        lat: response.bike.stolen_record.latitude}
+        new google.maps.Marker({
+          map: HotBikeScope.map,
+          position: coords
+        });
+        HotBikeScope.coords.push(coords);
       }).then(function(){
+        console.log(HotBikeScope.coords);
         HotBikeScope.displayCount(HotBikeScope.coords.length);
       }).fail(function(error){
         console.log(error);

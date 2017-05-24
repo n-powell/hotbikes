@@ -1,5 +1,7 @@
-function BikeData(){
+function BikeData(displayCount){
   this.ids = [];
+  this.coords = [];
+  this.displayCount = displayCount;
 }
 
 BikeData.prototype.getAllIds = function(bikesArray){
@@ -10,14 +12,30 @@ BikeData.prototype.getAllIds = function(bikesArray){
   bikesArray.forEach(function(bike){
     this.ids.push(bike.id);
   }, this);
-}
+};
+
+BikeData.prototype.getAllBikesById = function(){
+  let HotBikeScope = this;
+  this.ids.forEach(function(id){
+      $.get(`https://bikeindex.org:443/api/v3/bikes/${id}`)
+      .then(function(response){
+        HotBikeScope.coords.push({lng: response.bike.stolen_record.longitude,
+        lat: response.bike.stolen_record.latitude});
+      }).then(function(){
+        HotBikeScope.displayCount(HotBikeScope.coords.length);
+      }).fail(function(error){
+        console.log(error);
+      });
+  });
+};
+
 
 BikeData.prototype.getAllByLocation = function(location){
   const PAGE = "1";
-  const PER_PAGE = "100";
+  const PER_PAGE = "1";
   const LOCATION = location.replace(/,/, "%2C").replace(" ", "%20");
   const DISTANCE = "100";
-  let parentScope = this;
+  let HotBikeScope = this;
   // the scope inside the 'then' method's callback function defaults to the
   // object which 'get' returns. this limits us from accessing the parent scope,
   // and by extension the BikeData object. because of lexical scoping, the callback
@@ -26,7 +44,9 @@ BikeData.prototype.getAllByLocation = function(location){
   // access to class methods.
   $.get(`https://bikeindex.org:443/api/v3/search?page=${PAGE}&per_page=${PER_PAGE}&location=${LOCATION}&distance=${DISTANCE}&stolenness=proximity`)
   .then(function(response){
-    parentScope.getAllIds(response.bikes);
+    HotBikeScope.getAllIds(response.bikes);
+    HotBikeScope.getAllBikesById();
+
   }).fail(function(error){
     console.log(error);
   });

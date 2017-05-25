@@ -1,14 +1,14 @@
 function BikeData(displayCount){
   this.ids = [];
   this.coords = [];
+  this.googleLatLngs = [];
   this.displayCount = displayCount;
   this.map;
+  this.heatmap;
 }
 
 BikeData.prototype.generateHeatmap = function(){
-  console.log("test");
-  new google.maps.visualization.HeatmapLayer({
-    data: this.coords.map(function(c){return new google.maps.LatLng(c.lat,c.lng)}),
+  this.heatmap = new google.maps.visualization.HeatmapLayer({
     map: this.map,
     radius: 20
   });
@@ -29,21 +29,25 @@ BikeData.prototype.getAllIds = function(bikesArray){
   bikesArray.forEach(function(bike){this.ids.push(bike.id);}, this);
 };
 
+BikeData.prototype.updateHeatmap = function(){
+  this.heatmap.setData(this.googleLatLngs);
+}
+
 BikeData.prototype.getAllBikesById = function(){
   let HotBikeScope = this;
   this.ids.forEach(function(id){
       $.get(`https://bikeindex.org:443/api/v3/bikes/${id}`)
       .then(function(response){
-        let coords = {lng: response.bike.stolen_record.longitude,
-        lat: response.bike.stolen_record.latitude}
+        // let coords = {lng: response.bike.stolen_record.longitude,
+        // lat: response.bike.stolen_record.latitude}
         // new google.maps.Marker({
         //   map: HotBikeScope.map,
         //   position: coords
         // });
-        HotBikeScope.coords.push(coords);
-      }).then(function(){
-        console.log(HotBikeScope.coords);
-        HotBikeScope.displayCount(HotBikeScope.coords.length);
+        HotBikeScope.googleLatLngs.push(new google.maps.LatLng(response.bike.stolen_record.latitude, response.bike.stolen_record.longitude));
+        HotBikeScope.updateHeatmap();
+        HotBikeScope.displayCount(HotBikeScope.googleLatLngs.length);
+        // HotBikeScope.coords.push(coords);
       }).fail(function(error){
         console.log(error);
       });
@@ -65,7 +69,6 @@ BikeData.prototype.getAllByLocation = function(location){
   // access to class methods.
   $.get(`https://bikeindex.org:443/api/v3/search?page=${PAGE}&per_page=${PER_PAGE}&location=${LOCATION}&distance=${DISTANCE}&stolenness=proximity`)
   .then(function(response){
-    this
     HotBikeScope.getAllIds(response.bikes);
     HotBikeScope.getAllBikesById();
 

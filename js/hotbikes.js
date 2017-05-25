@@ -2,7 +2,7 @@ function BikeData(displayCount){
   this.ids = [];
   this.googleLatLngs = [];
   this.displayCount = displayCount;
-  this.staticMax = 100;
+  this.staticMax = 10000;
 }
 
 BikeData.prototype.generateHeatmap = function(){
@@ -14,7 +14,7 @@ BikeData.prototype.generateHeatmap = function(){
 
 BikeData.prototype.generateMap = function(coords) {
   this.map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 11,
+    zoom: 13,
     center: coords,
   });
 };
@@ -68,11 +68,18 @@ BikeData.prototype.getChunk = function(currentPage, totalBikes) {
       HOTBIKESCOPE.ids = HOTBIKESCOPE.ids.concat(ids);
       HOTBIKESCOPE.getChunk(currentPage+1, totalBikes);
     }).fail(function(error){
-      console.log(error);
+      console.log(error.responseText);
+      console.log("trying again in 10 seconds");
+      window.setTimeout(HOTBIKESCOPE.restartChunks, 10000, currentPage, totalBikes, HOTBIKESCOPE);
     });
   } else {
     this.getBike(1);
   }
+}
+
+BikeData.prototype.restartChunks = function(page, total, context) {
+  console.log(`trying again from page ${page}`);
+  context.getChunk(page, total);
 }
 
 BikeData.prototype.getBike = function(index){
@@ -81,14 +88,24 @@ BikeData.prototype.getBike = function(index){
     let id = this.ids[index];
     $.get(`https://bikeindex.org:443/api/v3/bikes/${id}`)
     .then(function(response){
+      console.log(index);
       HOTBIKESCOPE.googleLatLngs.push(new google.maps.LatLng(response.bike.stolen_record.latitude, response.bike.stolen_record.longitude));
       HOTBIKESCOPE.updateHeatmap();
       HOTBIKESCOPE.displayCount(`${index+1}/${HOTBIKESCOPE.staticMax}`)
       HOTBIKESCOPE.getBike(index+1);
     }).fail(function(error){
-      console.log(error);
+      console.log(error.responseText);
+      console.log("trying again in 10 seconds");
+      window.setTimeout(HOTBIKESCOPE.restartBikes, 10000, index, HOTBIKESCOPE);
     });
   }
 };
+
+BikeData.prototype.restartBikes = function(index, context) {
+  console.log(`trying again from index ${index}`);
+  context.getBike(index);
+}
+
+
 
 exports.BikeData = BikeData;

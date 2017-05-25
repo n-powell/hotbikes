@@ -2,7 +2,7 @@ const BikeData = require('./../js/hotbikes.js').BikeData;
 
 var displayCount = function(count){
   $("#coords-count").text(`${count}`);
-}
+};
 
 $(document).ready(function() {
   const HOTBIKE = new BikeData(displayCount);
@@ -12,6 +12,6 @@ $(document).ready(function() {
 
   $("#city-submit").click(function() {
     const CITY = $("#city-input").val();
-    HOTBIKE.getAllByLocation(CITY);
+    HOTBIKE.getBikes(CITY);
   });
 });

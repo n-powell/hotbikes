@@ -1,7 +1,7 @@
 const BikeData = require('./../js/hotbikes.js').BikeData;
 
 var displayCount = function(count){
-  $("#coords-count").text(`${count}`);
+  $("#coords-count").text(count);
 };
 
 $(document).ready(function() {
